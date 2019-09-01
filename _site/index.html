@@ -20,6 +20,7 @@
 <link rel="canonical" href="http://localhost:4000/" />
 <meta property="og:url" content="http://localhost:4000/" />
 <meta property="og:site_name" content="4AllUsers" />
+<link rel="next" href="http://localhost:4000/page/2/" />
 <script type="application/ld+json">
 {"@type":"WebSite","url":"http://localhost:4000/","name":"4AllUsers","headline":"4AllUsers","description":"Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler","author":{"@type":"Person","name":"Tuğcan Özel"},"@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
@@ -48,15 +49,22 @@
         <ul>
     
       <li>
-          <h2><a href="/websec/xxe/">A Deep Dive Into XXE Injection</a></h2>
-          <time datetime="2019-08-16T00:00:00+03:00">16 Aug 2019</time>
-          <p>Yaziya baslamadan once sunu soylemeliyim ki,bu yaziyi biraz anlamak icin xml nedir ve neden vardir bilmek gerekli bu yuzden suraya birkac kaynak birakicam. W3Schoolu karistirarak bulabilirsiniz XML Illana vikipedi olsun istiyorsaniz. XML Ek olarak su blogta gordugum guzel bir bilgi var XML Ayrica google’a xml veya xml nedir gibi seyler...</p>
+          <h2><a href="/websec/xss-without-parentheses-and-semi-colons/">XSS without parentheses and semi-colons</a></h2>
+          <time datetime="2019-09-01T00:00:00+03:00">01 Sep 2019</time>
+          <p>Bundan 4-5 sene once bir teknik kesfedildi.JavaScript, fonksiyonlarini parantezsiz cagirabiliyordu ve bu islemi throw ve onerror sayesinde gerceklestiriyordu. Onerror isleyicisini, cagirmak istedigimiz fonksiyon icin kullanirken throw durumunu ise fonksiyona arguman gecirmek icin kullanmaktayiz. &lt;script&gt;onerror=alert;throw 1337 &lt;/script&gt; Onerror isleyicisi ne zaman cagrilsa, herhangi bir JavaScript exceptioni(istisna) yaratir, ve throw durumu ise...</p>
       </li>
     
       <li>
-          <h2><a href="/machines/bank/">Hack-The-Box Bank</a></h2>
-          <time datetime="2019-08-06T00:00:00+03:00">06 Aug 2019</time>
-          <p>Merhaba arkadaşlar, bugün size hack the box makinasi olan Bank’i nasil çözdüğümü anlatmaya çalışıcam.Harbi güzel makinaydı, çözümü birkaç nokta hariç diğer klasikleşmiş makinalarla aynıydı.Makinamız linux makinasıydı ve ip si 10.10.10.29.Hazırsak baslayalım. Server Enumeration Ilk olarak tabikide server enumeration icin Nmap taramamizi gerceklestiriyoruz. Bakiyorum ki 3 tane acik port 22/SSH 53...</p>
+          <h2><a href="/websec/http-desync-attacks-request-smuggling-reborn/">HTTP request smuggling</a></h2>
+          <time datetime="2019-08-20T00:00:00+03:00">20 Aug 2019</time>
+          <p>Ozet
+</p>
+      </li>
+    
+      <li>
+          <h2><a href="/websec/xxe/">A Deep Dive Into XXE Injection</a></h2>
+          <time datetime="2019-08-16T00:00:00+03:00">16 Aug 2019</time>
+          <p>Yaziya baslamadan once sunu soylemeliyim ki,bu yaziyi biraz anlamak icin xml nedir ve neden vardir bilmek gerekli bu yuzden suraya birkac kaynak birakicam. W3Schoolu karistirarak bulabilirsiniz XML Illana vikipedi olsun istiyorsaniz. XML Ek olarak su blogta gordugum guzel bir bilgi var XML Ayrica google’a xml veya xml nedir gibi seyler...</p>
       </li>
     
 </ul>
@@ -66,6 +74,18 @@
     </div>
   </div>
 
+  
+  <div class="pagination">
+    
+    <span class="page-item">&laquo;</span>
+      
+    <span class="page-item">1</span>
+      
+    <a href="/page/2/" class="page-item">2</a>
+      
+    <a href="/page/2/" class="page-item">&raquo;</a>
+    
+  </div>
    <footer>
   <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
     <span>

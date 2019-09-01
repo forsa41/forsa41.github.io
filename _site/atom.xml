@@ -12,6 +12,58 @@
     </author>
     
       <item>
+        <title>XSS without parentheses and semi-colons</title>
+        <description>&lt;p&gt;&lt;img src=&quot;/assets/WebSec/xsswithoutparant/0.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Bundan 4-5 sene once bir teknik kesfedildi.JavaScript, &lt;a href=&quot;http://www.thespanner.co.uk/2012/05/01/xss-technique-without-parentheses/&quot;&gt;fonksiyonlarini&lt;/a&gt; parantezsiz cagirabiliyordu ve bu islemi &lt;strong&gt;throw&lt;/strong&gt; ve &lt;strong&gt;onerror&lt;/strong&gt; sayesinde gerceklestiriyordu.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Onerror&lt;/strong&gt; isleyicisini, cagirmak istedigimiz fonksiyon icin kullanirken &lt;strong&gt;throw&lt;/strong&gt; durumunu ise fonksiyona arguman gecirmek icin kullanmaktayiz.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;script&amp;gt;onerror=alert;throw 1337 &amp;lt;/script&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Onerror&lt;/strong&gt; isleyicisi ne zaman cagrilsa, herhangi bir JavaScript exceptioni(istisna) yaratir, ve &lt;strong&gt;throw&lt;/strong&gt; durumu ise bizim kendi istedigimiz ifadelerle exception(istisna) yaratmamiza izin verir;Cunku &lt;strong&gt;throw&lt;/strong&gt; bir durumdur,genellikle &lt;strong&gt;onerror&lt;/strong&gt; atamasini takip etmek icinde noktali virgulden sonra yeni bir durum baslatilarak &lt;strong&gt;throw&lt;/strong&gt; ifadesi yerlestirilir.&lt;/p&gt;
+
+&lt;p&gt;Bazi sitelerde karsilasilan kadariyla parantezler ve noktali virguller filtrelenmis olabilir, ve dusununce ustte gordugumuz teknigi uyarlayarak noktali virgulsuz fonksiyon calistirabiliriz.Ilk yol gayet basit:&lt;strong&gt;onerror&lt;/strong&gt; ifadesini suslu parantezlerle bir blok icerisine alarak kullanabilirsiniz ve blok ifadesinden sonra &lt;strong&gt;throw&lt;/strong&gt; ifadesini noktali virgulsuz(veya yeni satir ile) kullanabilirsiniz.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;script&amp;gt;{onerror=alert}throw 1337&amp;lt;/script&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Onerror’u&lt;/strong&gt; blok icinde kullanmak gayet kullanisli ama daha cool bir alternatifte var.Ilginc olacak fakat &lt;strong&gt;throw&lt;/strong&gt; durumu ifade kabul edebilmekte, &lt;strong&gt;onerror&lt;/strong&gt; atamasini &lt;strong&gt;throw&lt;/strong&gt; durumu icinde yaparsak son ifadeyi &lt;strong&gt;onerror&lt;/strong&gt; isleyicisine yollayarak fonksiyonu cagirabiliriz. Calismasi su sekilde:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/xsswithoutparant/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;script&amp;gt;throw onerror=alert,'some string',123,'haha'&amp;lt;/script&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Eger bu scripti Chrome’da calistirirsaniz goreceksiniz ki stringimizden once “Uncaught” ifadesini goreceksiniz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/WebSec/xsswithoutparant/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Chrome icin buna da bir cozum var.”Uncaught” ifadesini degisken olarak kullanarak JavaScript calistirabiliriz.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;script&amp;gt;{onerror=eval}throw'=alert\x281337\x29'&amp;lt;/script&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Eval ifadesine “Uncaught=alert(1337)” gonderdik.Bu olay chromeda gayet guzel calismakta.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://portswigger.net/blog/xss-without-parentheses-and-semi-colons&quot;&gt;Kaynak&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Kaynaga bakarak yazinin devamini okuyabilirsiniz.Ben yaziyi yarida kestim;Cunku yazinin bu kismindan sonraki kismi bu olaylarin nasil calistigina dair ispatlarla ilgili.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 01 Sep 2019 00:00:00 +0300</pubDate>
+        <link>http://localhost:4000//websec/xss-without-parentheses-and-semi-colons/</link>
+        <link href="http://localhost:4000/websec/xss-without-parentheses-and-semi-colons/"/>
+        <guid isPermaLink="true">http://localhost:4000/websec/xss-without-parentheses-and-semi-colons/</guid>
+      </item>
+    
+      <item>
+        <title>HTTP request smuggling</title>
+        <description>&lt;h2 id=&quot;ozet&quot;&gt;Ozet&lt;/h2&gt;
+</description>
+        <pubDate>Tue, 20 Aug 2019 00:00:00 +0300</pubDate>
+        <link>http://localhost:4000//websec/http-desync-attacks-request-smuggling-reborn/</link>
+        <link href="http://localhost:4000/websec/http-desync-attacks-request-smuggling-reborn/"/>
+        <guid isPermaLink="true">http://localhost:4000/websec/http-desync-attacks-request-smuggling-reborn/</guid>
+      </item>
+    
+      <item>
         <title>A Deep Dive Into XXE Injection</title>
         <description>&lt;p&gt;Yaziya baslamadan once sunu soylemeliyim ki,bu yaziyi biraz anlamak icin xml nedir ve neden vardir bilmek gerekli bu yuzden suraya birkac kaynak birakicam.&lt;/p&gt;
 
