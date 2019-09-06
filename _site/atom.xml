@@ -12,6 +12,147 @@
     </author>
     
       <item>
+        <title>Hack-The-Box Popcorn</title>
+        <description>&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/0.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Merhaba arkadaslar, bugun size daha onceden cozmus oldugum hack the box makinasi olan &lt;strong&gt;popcorn’u&lt;/strong&gt; nasil cozdugumu anlatmaya calisicam.Ortalama ayarlarda guzel bir makinaydi.Linux makinasiydi ve ip’si 10.10.10.6’idi hazirsak baslayalim.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id=&quot;nmap&quot;&gt;NMAP&lt;/h3&gt;
+
+&lt;p&gt;Acik portlari ve server uzerinde kosan servisleri gormek icin her zaman yapildigi gibi bir nmap taramasi baslatalim.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;h3 id=&quot;http&quot;&gt;HTTP&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Web sayfasina gittigimizde karsimiza yukaridaki resimdeki gibi bir sayfa cikmakta.Sayfanin kaynak kodunda yada robots.txt kismindan herhangi bir sey cikmamakta.Bu yuzden de bir content discovery yapalim bakalim neler gelecek.&lt;/p&gt;
+
+&lt;h4 id=&quot;content-discovery&quot;&gt;Content Discovery&lt;/h4&gt;
+
+&lt;p&gt;Gobuster ile icerik kesfetme(content discovery) yaptiktan sonra cikan sonuclara bakiyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;/index dizinine baktigim zaman, zaten ilk basta cikan sayfa bize geri donmekte.&lt;/li&gt;
+  &lt;li&gt;/test dizininde php versiyonu hakkinda bilgiler bulunamkta.&lt;/li&gt;
+  &lt;li&gt;/rename dizininde index.php parametreleri hakkinda bilgi vermekte.&lt;/li&gt;
+  &lt;li&gt;/torrent dizininde ise&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Sayfaya baktigimiz zaman gozumuze carpan su anlik login sayfasindan sql injection ve upload kisminda dosya upload ederek reverse shell almak.Hack the box makinalarinda &lt;strong&gt;user.txt&lt;/strong&gt; ve &lt;strong&gt;root.txt&lt;/strong&gt; dosyalarini okumaya calistigimizdan dolayi genellikle upload kismi daha mantikli fakat sql injection da lazim olabilir.&lt;/p&gt;
+
+&lt;p&gt;Su durumda sql injection zafiyeti denememe ragmen herhangi bir zafiyet bulamadim.Bu noktadan sonra da upload yerine odaklandim.Upload kismina tikladiktan sonra onume kayit olmami isteyen bir sayfa geliyor.&lt;/p&gt;
+
+&lt;p&gt;Kayit olmadan once dikkat ettim ki torrent dizininde &lt;em&gt;torrent hoster&lt;/em&gt; adli bir uygulama calismakta, &lt;strong&gt;searchsploit&lt;/strong&gt; kullanarak bir exploit var mi bakayim dedim ve…&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Bu kisimda dusundugum sekilde file upload zafiyeti oldugunu soylemekte.O zaman bi uye olalim sonra bakalim neler olacak.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Uye olup giris yaptiktan sonra karsimiza soyle bir sayfa gelmekte.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Php reverse shell yuklemeye calistim fakat yemedi:D. Torrent dosyasi yuklemem gerektigini sonunda fark ettim.Kendim &lt;strong&gt;touch&lt;/strong&gt; komutu ile iso dosyasi falan yapmaya calistim ama o da olmadi.Bir tane torrent sitesinden bir tane filmin torrenti indirdim tam olarak adini hatirlamiyorum ama onume geleni indirdim yani.&lt;/p&gt;
+
+&lt;p&gt;Yuklemeden onceki sayfa soyle:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Simdi fark ettim ki yukledigim film Dark Phoenix’mis :D.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Sayfayi bir inceledikten sonra &lt;strong&gt;edit this torrent&lt;/strong&gt; linki ilgi cekici geldi bir bastim ki, yukledigimiz torrent dosyasi icin image yukleyebiliyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Yukaridada gorebiliyoruz ki (Submit Screenshot altinda cerceve icin alinmis halde) jpg,jpeg,png gibi kisaca resim ya da gif dosyalarini kabul etmekte.&lt;/p&gt;
+
+&lt;p&gt;Simdi verecegim linki hack-the-box Bank cozumunde de vermistim &lt;a href=&quot;http://pentestmonkey.net/tools/web-shells/php-reverse-shell&quot;&gt;pentest monkey php reverse shell&lt;/a&gt;.Bu linkteki shelli indirdikten sonra uzerinde CHANGE THIS yazan yerleri kendimize gore ayarliyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Resimdeki ip kismina terminale &lt;strong&gt;ifconfig&lt;/strong&gt; yazdiktan sonra karsiniza gelen yerden tun0 kismindaki ip’yi yazmalisiniz.&lt;/li&gt;
+  &lt;li&gt;Port kismina kullanilmayan istediginiz bir portu yazabilirsiniz.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Bu ayarlarida cektikten sonra php dosyamizi filtreden gecirmek icin sonuna .png ekliyoruz resim gelio simdi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Burp Suite programini acip proxy ile servera gonderilen istege intercept yaptiktan sonra karsimiza gelen filename kismindaki dosyanin isminden .png kismini siliyoruz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;ve sonra booom dosya yuklenmis halde.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/14.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dosyamizi upload ettigimize gore reverse shell almamiz icin dosyayi calistirmamiz yani lokasyonunu bulmamiz gerekir.Genellikle uploads yada upload olarak oldugu icin bu dizinleri denedim ve oldu.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/15.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dosyayida buldugumuza gore &lt;strong&gt;netcat&lt;/strong&gt; ile php dosyasinda ayarladigimiz portu dinleyip, php dosyasini calistirirsak shellimiz gelmis olucak.&lt;/p&gt;
+
+&lt;p&gt;YAUVZA…shellimiz geldi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/16.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hemen user.txt dosyamizi okuyabiliriz.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/17.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;User tarafini hallettikten sonra simdi de hak yukseltme olayini tamamlamamiz gerekiyor.Oncesinde verdigim bir linki simdi gene veriyorum &lt;a href=&quot;https://blackwintersecurity.com/&quot;&gt;blackwinter&lt;/a&gt;.Bu sitede hak yukseltmeye dair kolay guzel yayinlar var.&lt;/p&gt;
+
+&lt;p&gt;Simdi ilk olarak terminalimi bir guzel temizlemek icin &lt;code class=&quot;highlighter-rouge&quot;&gt;export TERM=xterm&lt;/code&gt; komutunu yaziyorum obur turlu clear komutu calismamakta.Bundan sonra gidecegim yol ilk olarak isletim sisteminin dagitiminin versiyonu daha sonra ise kernel versiyonu olarak gider eger bu ikisinden de herhangi bir sey bulamassam o zaman LinEnum.sh dosyasini servera upload edip calistiririm. Let’s go o zaman.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/18.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Versiyonumuzu gordukten sonra bir aratalim bakalim neler cikicak.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/19.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Evet karsimiza ciktiki local privesc zafiyetine sahip icinden birini secelim o zaman ben ikinciyi sectim ilk cok iyi olsa ikincisi olmazdi demi :D&lt;/p&gt;
+
+&lt;p&gt;Simdi bakin burasi cok onemli :D. Bir tarafta dosyayi upload etmek icin kendi bilgisayarimi http serveri olarak kullanirken(Sag taraf) bir tarafta ise kendi bilgisayarima indirdigim bash scriptini server tarafina indirmek icin wget kullaniyorum fakat dikkat etmemiz gereken yer /tmp gibi her kullaniciya acik paylasim yerlerine dosya indirmek.&lt;a href=&quot;https://wiki.archlinux.org/index.php/Tmpfs&quot;&gt;Tmpfs&lt;/a&gt; harici herhangi bir yere denerseniz &lt;strong&gt;Permission denied&lt;/strong&gt; hatasi ile karsilasabilirsiniz(Sol taraf).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dosyaya gerekli izinleri verdim ve satir sonlarini sed komutuyla sildim fakat elime bir sey gecmedi.Her turlu sikintiyi cozmeye calistim fakat sonradan anladimki galiba bizden bu privesci istemiyor.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/21.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Sonra uzun arastirmalarim sonucu soyle bir siteye denk geldim.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/22.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Daha sonra exploit-db’den aradigim exploitin kaynak kodunu indirdim.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/23.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Kaynak kodunu indirdikten sonra yukarida kullandigim methodun aynisini kullanarak kaynak dosyasini servera indirdim ve boooooooM! KRALIZ.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hackthebox/Popcorn/24.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Makinamizin cozumu burda bitmistir.SAOLUN tesekkurler.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 02 Sep 2019 00:00:00 +0300</pubDate>
+        <link>http://localhost:4000//machines/popcorn/</link>
+        <link href="http://localhost:4000/machines/popcorn/"/>
+        <guid isPermaLink="true">http://localhost:4000/machines/popcorn/</guid>
+      </item>
+    
+      <item>
         <title>XSS without parentheses and semi-colons</title>
         <description>&lt;p&gt;&lt;img src=&quot;/assets/WebSec/xsswithoutparant/0.jpg&quot; /&gt;&lt;/p&gt;
 
@@ -51,16 +192,6 @@
         <link>http://localhost:4000//websec/xss-without-parentheses-and-semi-colons/</link>
         <link href="http://localhost:4000/websec/xss-without-parentheses-and-semi-colons/"/>
         <guid isPermaLink="true">http://localhost:4000/websec/xss-without-parentheses-and-semi-colons/</guid>
-      </item>
-    
-      <item>
-        <title>HTTP request smuggling</title>
-        <description>&lt;h2 id=&quot;ozet&quot;&gt;Ozet&lt;/h2&gt;
-</description>
-        <pubDate>Tue, 20 Aug 2019 00:00:00 +0300</pubDate>
-        <link>http://localhost:4000//websec/http-desync-attacks-request-smuggling-reborn/</link>
-        <link href="http://localhost:4000/websec/http-desync-attacks-request-smuggling-reborn/"/>
-        <guid isPermaLink="true">http://localhost:4000/websec/http-desync-attacks-request-smuggling-reborn/</guid>
       </item>
     
       <item>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Hack-The-Box Popcorn</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Hack-The-Box Popcorn | 4AllUsers</title>
+<meta name="generator" content="Jekyll v3.8.6" />
+<meta property="og:title" content="Hack-The-Box Popcorn" />
+<meta name="author" content="Tuğcan Özel" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler" />
+<meta property="og:description" content="Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler" />
+<link rel="canonical" href="http://localhost:4000/machines/popcorn/" />
+<meta property="og:url" content="http://localhost:4000/machines/popcorn/" />
+<meta property="og:site_name" content="4AllUsers" />
+<meta property="og:image" content="http://localhost:4000/assets/hackthebox/Popcorn/0.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-02T00:00:00+03:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","url":"http://localhost:4000/machines/popcorn/","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machines/popcorn/"},"headline":"Hack-The-Box Popcorn","dateModified":"2019-09-02T00:00:00+03:00","datePublished":"2019-09-02T00:00:00+03:00","author":{"@type":"Person","name":"Tuğcan Özel"},"description":"Siber Güvenlik Bloğu,Hack The Box ve makina çözümleri, yazılar ve diğer şeyler","image":"http://localhost:4000/assets/hackthebox/Popcorn/0.png","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>4allusers@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/categories"><h2 class="header-link">Categories</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Hack-The-Box Popcorn</h2>
+  <time datetime="2019-09-02T00:00:00+03:00" class="by-line">02 Sep 2019</time>
+  <p><img src="/assets/hackthebox/Popcorn/0.png" /></p>
+
+<p>Merhaba arkadaslar, bugun size daha onceden cozmus oldugum hack the box makinasi olan <strong>popcorn’u</strong> nasil cozdugumu anlatmaya calisicam.Ortalama ayarlarda guzel bir makinaydi.Linux makinasiydi ve ip’si 10.10.10.6’idi hazirsak baslayalim.</p>
+<hr />
+<h3 id="nmap">NMAP</h3>
+
+<p>Acik portlari ve server uzerinde kosan servisleri gormek icin her zaman yapildigi gibi bir nmap taramasi baslatalim.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/1.png" alt="" /></p>
+
+<hr />
+<h3 id="http">HTTP</h3>
+
+<p><img src="/assets/hackthebox/Popcorn/2.png" alt="" /></p>
+
+<p>Web sayfasina gittigimizde karsimiza yukaridaki resimdeki gibi bir sayfa cikmakta.Sayfanin kaynak kodunda yada robots.txt kismindan herhangi bir sey cikmamakta.Bu yuzden de bir content discovery yapalim bakalim neler gelecek.</p>
+
+<h4 id="content-discovery">Content Discovery</h4>
+
+<p>Gobuster ile icerik kesfetme(content discovery) yaptiktan sonra cikan sonuclara bakiyoruz.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/3.png" alt="" /></p>
+
+<ul>
+  <li>/index dizinine baktigim zaman, zaten ilk basta cikan sayfa bize geri donmekte.</li>
+  <li>/test dizininde php versiyonu hakkinda bilgiler bulunamkta.</li>
+  <li>/rename dizininde index.php parametreleri hakkinda bilgi vermekte.</li>
+  <li>/torrent dizininde ise</li>
+</ul>
+
+<p><img src="/assets/hackthebox/Popcorn/4.png" alt="" /></p>
+
+<p>Sayfaya baktigimiz zaman gozumuze carpan su anlik login sayfasindan sql injection ve upload kisminda dosya upload ederek reverse shell almak.Hack the box makinalarinda <strong>user.txt</strong> ve <strong>root.txt</strong> dosyalarini okumaya calistigimizdan dolayi genellikle upload kismi daha mantikli fakat sql injection da lazim olabilir.</p>
+
+<p>Su durumda sql injection zafiyeti denememe ragmen herhangi bir zafiyet bulamadim.Bu noktadan sonra da upload yerine odaklandim.Upload kismina tikladiktan sonra onume kayit olmami isteyen bir sayfa geliyor.</p>
+
+<p>Kayit olmadan once dikkat ettim ki torrent dizininde <em>torrent hoster</em> adli bir uygulama calismakta, <strong>searchsploit</strong> kullanarak bir exploit var mi bakayim dedim ve…</p>
+
+<p><img src="/assets/hackthebox/Popcorn/5.png" alt="" /></p>
+
+<p>Bu kisimda dusundugum sekilde file upload zafiyeti oldugunu soylemekte.O zaman bi uye olalim sonra bakalim neler olacak.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/6.png" alt="" /></p>
+
+<p>Uye olup giris yaptiktan sonra karsimiza soyle bir sayfa gelmekte.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/7.png" alt="" /></p>
+
+<p>Php reverse shell yuklemeye calistim fakat yemedi:D. Torrent dosyasi yuklemem gerektigini sonunda fark ettim.Kendim <strong>touch</strong> komutu ile iso dosyasi falan yapmaya calistim ama o da olmadi.Bir tane torrent sitesinden bir tane filmin torrenti indirdim tam olarak adini hatirlamiyorum ama onume geleni indirdim yani.</p>
+
+<p>Yuklemeden onceki sayfa soyle:</p>
+
+<p><img src="/assets/hackthebox/Popcorn/8.png" alt="" /></p>
+
+<p>Simdi fark ettim ki yukledigim film Dark Phoenix’mis :D.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/9.png" alt="" /></p>
+
+<p>Sayfayi bir inceledikten sonra <strong>edit this torrent</strong> linki ilgi cekici geldi bir bastim ki, yukledigimiz torrent dosyasi icin image yukleyebiliyoruz.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/10.png" alt="" /></p>
+
+<p>Yukaridada gorebiliyoruz ki (Submit Screenshot altinda cerceve icin alinmis halde) jpg,jpeg,png gibi kisaca resim ya da gif dosyalarini kabul etmekte.</p>
+
+<p>Simdi verecegim linki hack-the-box Bank cozumunde de vermistim <a href="http://pentestmonkey.net/tools/web-shells/php-reverse-shell">pentest monkey php reverse shell</a>.Bu linkteki shelli indirdikten sonra uzerinde CHANGE THIS yazan yerleri kendimize gore ayarliyoruz.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/11.png" alt="" /></p>
+
+<ul>
+  <li>Resimdeki ip kismina terminale <strong>ifconfig</strong> yazdiktan sonra karsiniza gelen yerden tun0 kismindaki ip’yi yazmalisiniz.</li>
+  <li>Port kismina kullanilmayan istediginiz bir portu yazabilirsiniz.</li>
+</ul>
+
+<p>Bu ayarlarida cektikten sonra php dosyamizi filtreden gecirmek icin sonuna .png ekliyoruz resim gelio simdi.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/12.png" alt="" /></p>
+
+<p>Burp Suite programini acip proxy ile servera gonderilen istege intercept yaptiktan sonra karsimiza gelen filename kismindaki dosyanin isminden .png kismini siliyoruz.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/13.png" alt="" /></p>
+
+<p>ve sonra booom dosya yuklenmis halde.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/14.png" alt="" /></p>
+
+<p>Dosyamizi upload ettigimize gore reverse shell almamiz icin dosyayi calistirmamiz yani lokasyonunu bulmamiz gerekir.Genellikle uploads yada upload olarak oldugu icin bu dizinleri denedim ve oldu.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/15.png" alt="" /></p>
+
+<p>Dosyayida buldugumuza gore <strong>netcat</strong> ile php dosyasinda ayarladigimiz portu dinleyip, php dosyasini calistirirsak shellimiz gelmis olucak.</p>
+
+<p>YAUVZA…shellimiz geldi.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/16.png" alt="" /></p>
+
+<p>Hemen user.txt dosyamizi okuyabiliriz.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/17.png" alt="" /></p>
+
+<p>User tarafini hallettikten sonra simdi de hak yukseltme olayini tamamlamamiz gerekiyor.Oncesinde verdigim bir linki simdi gene veriyorum <a href="https://blackwintersecurity.com/">blackwinter</a>.Bu sitede hak yukseltmeye dair kolay guzel yayinlar var.</p>
+
+<p>Simdi ilk olarak terminalimi bir guzel temizlemek icin <code class="highlighter-rouge">export TERM=xterm</code> komutunu yaziyorum obur turlu clear komutu calismamakta.Bundan sonra gidecegim yol ilk olarak isletim sisteminin dagitiminin versiyonu daha sonra ise kernel versiyonu olarak gider eger bu ikisinden de herhangi bir sey bulamassam o zaman LinEnum.sh dosyasini servera upload edip calistiririm. Let’s go o zaman.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/18.png" alt="" /></p>
+
+<p>Versiyonumuzu gordukten sonra bir aratalim bakalim neler cikicak.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/19.png" alt="" /></p>
+
+<p>Evet karsimiza ciktiki local privesc zafiyetine sahip icinden birini secelim o zaman ben ikinciyi sectim ilk cok iyi olsa ikincisi olmazdi demi :D</p>
+
+<p>Simdi bakin burasi cok onemli :D. Bir tarafta dosyayi upload etmek icin kendi bilgisayarimi http serveri olarak kullanirken(Sag taraf) bir tarafta ise kendi bilgisayarima indirdigim bash scriptini server tarafina indirmek icin wget kullaniyorum fakat dikkat etmemiz gereken yer /tmp gibi her kullaniciya acik paylasim yerlerine dosya indirmek.<a href="https://wiki.archlinux.org/index.php/Tmpfs">Tmpfs</a> harici herhangi bir yere denerseniz <strong>Permission denied</strong> hatasi ile karsilasabilirsiniz(Sol taraf).</p>
+
+<p><img src="/assets/hackthebox/Popcorn/20.png" alt="" /></p>
+
+<p>Dosyaya gerekli izinleri verdim ve satir sonlarini sed komutuyla sildim fakat elime bir sey gecmedi.Her turlu sikintiyi cozmeye calistim fakat sonradan anladimki galiba bizden bu privesci istemiyor.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/21.png" alt="" /></p>
+
+<p>Sonra uzun arastirmalarim sonucu soyle bir siteye denk geldim.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/22.png" alt="" /></p>
+
+<p>Daha sonra exploit-db’den aradigim exploitin kaynak kodunu indirdim.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/23.png" alt="" /></p>
+
+<p>Kaynak kodunu indirdikten sonra yukarida kullandigim methodun aynisini kullanarak kaynak dosyasini servera indirdim ve boooooooM! KRALIZ.</p>
+
+<p><img src="/assets/hackthebox/Popcorn/24.png" alt="" /></p>
+
+<p>Makinamizin cozumu burda bitmistir.SAOLUN tesekkurler.</p>
+
+</article>
+
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>4AllUsers</b>
+    </span>
+    
+    <span>© 2019</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>

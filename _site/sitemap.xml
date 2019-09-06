@@ -9,12 +9,12 @@
 <lastmod>2019-08-16T00:00:00+03:00</lastmod>
 </url>
 <url>
-<loc>http://localhost:4000/websec/http-desync-attacks-request-smuggling-reborn/</loc>
-<lastmod>2019-08-20T00:00:00+03:00</lastmod>
-</url>
-<url>
 <loc>http://localhost:4000/websec/xss-without-parentheses-and-semi-colons/</loc>
 <lastmod>2019-09-01T00:00:00+03:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/machines/popcorn/</loc>
+<lastmod>2019-09-02T00:00:00+03:00</lastmod>
 </url>
 <url>
 <loc>http://localhost:4000/404/</loc>
